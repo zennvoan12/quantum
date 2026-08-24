@@ -15,6 +15,8 @@ use Midtrans\Snap;
 
 class CheckoutController extends Controller
 {
+    private const TAX_RATE = 11.00; // PPN 11%
+
     private function midtrans(): void
     {
         Config::$serverKey = config('midtrans.server_key');
@@ -31,7 +33,9 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->withErrors('Keranjang kosong.');
         }
 
-        $total = $carts->sum(fn($c) => $c->product->price * $c->quantity);
+        $subtotal = $carts->sum(fn($c) => $c->product->price * $c->quantity);
+        $taxAmount = round($subtotal * (self::TAX_RATE / 100), 2);
+        $total = $subtotal + $taxAmount;
 
         foreach ($carts as $cart) {
             if ($cart->product->stock < $cart->quantity) {
@@ -39,7 +43,7 @@ class CheckoutController extends Controller
             }
         }
 
-        return view('checkout.index', compact('carts', 'total'));
+        return view('checkout.index', compact('carts', 'subtotal', 'taxAmount', 'total'));
     }
 
     public function store(Request $request)
@@ -54,16 +58,21 @@ class CheckoutController extends Controller
             'alamat' => 'required|string|max:500',
         ]);
 
-        $total = $carts->sum(fn($c) => $c->product->price * $c->quantity);
+        $subtotal = $carts->sum(fn($c) => $c->product->price * $c->quantity);
+        $taxAmount = round($subtotal * (self::TAX_RATE / 100), 2);
+        $total = $subtotal + $taxAmount;
 
-        // ponytail: stok dikurangi sebelum bayar; pesanan expired/cancel tidak me-restore stok — tambahkan saat fitur batas bayar ada.
         DB::beginTransaction();
         try {
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'invoice_no' => 'INV-' . strtoupper(Str::random(10)),
-                'total' => $total,
+                'total' => $subtotal,           // subtotal produk (sebelum PPN)
+                'tax_rate' => self::TAX_RATE,
+                'tax_amount' => $taxAmount,
+                'total_paid' => $total,         // total yang harus dibayar (sudah termasuk PPN)
                 'status' => 'pending',
+                'alamat' => $request->alamat,
             ]);
 
             foreach ($carts as $cart) {
@@ -107,7 +116,7 @@ class CheckoutController extends Controller
         $params = [
             'transaction_details' => [
                 'order_id' => $order->invoice_no,
-                'gross_amount' => (int) $order->total,
+                'gross_amount' => (int) $order->total_paid, // kirim total termasuk PPN
             ],
             'customer_details' => [
                 'first_name' => Auth::user()->name,
@@ -134,7 +143,7 @@ class CheckoutController extends Controller
     {
         $this->midtrans();
 
-        $notif = new \Midtrans\Notification(); // verifikasi status via API Midtrans, bukan payload mentah
+        $notif = new \Midtrans\Notification();
 
         $order = Order::where('invoice_no', $notif->order_id)->first();
         if (!$order) {
@@ -146,7 +155,7 @@ class CheckoutController extends Controller
                 ->payment()->update(['payment_status' => 'paid', 'paid_at' => now()]),
             'deny', 'expire', 'cancel' => tap($order)->update(['status' => 'cancelled'])
                 ->payment()->update(['payment_status' => 'failed']),
-            default => null, // pending: biarkan
+            default => null,
         };
 
         return response('ok');

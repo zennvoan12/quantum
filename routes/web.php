@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductDetailController;
 use Illuminate\Support\Facades\Route;
@@ -22,11 +23,19 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('postLogin');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('showRegister');
     Route::post('/register', [AuthController::class, 'register'])->name('postRegister');
+
+    // Forgot / Reset Password
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
 // Authenticated routes (Pelanggan)
 Route::middleware(['auth'])->group(function () {
     Route::get('/transaksi-saya', [PageController::class, 'transaksi'])->name('pelanggan.transaksi');
+    Route::get('/transaksi-saya/{order}', [PageController::class, 'transaksiShow'])->name('pelanggan.transaksi.show');
+    Route::get('/transaksi-saya/{order}/invoice', [InvoiceController::class, 'download'])->name('pelanggan.invoice.download');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Keranjang Belanja & Checkout
@@ -46,7 +55,8 @@ Route::post('/payment/notification', [CheckoutController::class, 'notification']
 // Admin-only routes (Dashboard & Management)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [PageController::class, 'adminDashboard'])->name('dashboard');
-    Route::get('/apriori', [AprioriController::class, 'index'])->name('apriori');
+    Route::get('/transaksi', [OrderController::class, 'index'])->name('transaksi');
+    Route::get('/apriori', [AprioriController::class, 'index'])->name('apriori.index');
     Route::post('/apriori/process', [AprioriController::class, 'process'])->name('apriori.process');
     Route::get('/apriori/{log}', [AprioriController::class, 'show'])->name('apriori.show');
     Route::resource('products', ProductController::class);

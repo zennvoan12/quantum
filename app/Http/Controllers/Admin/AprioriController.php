@@ -19,6 +19,18 @@ class AprioriController extends Controller
         return view('admin.apriori.index', compact('logs'));
     }
 
+    public function show(AprioriLog $log)
+    {
+        $log->load([
+            'rules' => fn($q) => $q->with('productA', 'productB')->orderByDesc('lift'),
+            'itemsets',
+        ]);
+
+        $totalTransactions = OrderItem::distinct('order_id')->count('order_id');
+
+        return view('admin.apriori.show', compact('log', 'totalTransactions'));
+    }
+
     public function process(Request $request)
     {
         $request->validate([
@@ -176,6 +188,7 @@ class AprioriController extends Controller
                             'product_id_b' => $conId,
                             'support' => $rule['support'],
                             'confidence' => $rule['confidence'],
+                            'lift' => $rule['lift'],
                         ]);
                     }
                 }

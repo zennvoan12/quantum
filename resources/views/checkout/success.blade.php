@@ -3,41 +3,44 @@
 @section('title', 'Pesanan Berhasil')
 
 @section('content')
-<h1 class="mb-8 text-xl uppercase tracking-[0.25em]">Pesanan Berhasil Dibuat</h1>
+<div class="fade-up max-w-2xl">
+    <h1 class="text-xl uppercase tracking-[0.25em] mb-8">Pesanan Berhasil Dibuat</h1>
 
-<div class="max-w-2xl">
     <div class="border border-green-200 bg-green-50 rounded-lg p-6 mb-8">
         <div class="flex items-center gap-3 text-green-700 mb-4">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             <span class="text-sm uppercase tracking-[0.2em]">Terima kasih telah berbelanja!</span>
         </div>
-        <p class="text-sm text-green-600">Pesanan Anda sedang menunggu pembayaran. Silakan lakukan transfer ke rekening toko.</p>
+        <p class="text-sm text-green-600">Pesanan Anda telah dibuat. Silakan selesaikan pembayaran melalui Midtrans.</p>
     </div>
 
     <div class="border border-neutral-200 rounded-lg p-6 mb-8">
         <h2 class="mb-4 text-sm uppercase tracking-[0.2em]">Detail Pesanan</h2>
         <dl class="space-y-2 text-sm">
-            <div class="flex justify-between"><dt class="text-neutral-500">Nomor Invoice</dt><dd class="font-medium">{{ $order->invoice_no }}</dd></div>
+            <div class="flex justify-between"><dt class="text-neutral-500">Nomor Invoice</dt><dd class="font-mono font-medium">{{ $order->invoice_no }}</dd></div>
             <div class="flex justify-between"><dt class="text-neutral-500">Tanggal</dt><dd>{{ $order->created_at->format('d M Y H:i') }}</dd></div>
-            <div class="flex justify-between"><dt class="text-neutral-500">Status</dt><dd><span class="{{ $order->status === 'pending' ? 'text-yellow-700' : 'text-green-700' }}">{{ ucfirst($order->status) }}</span></dd></div>
-            <div class="flex justify-between"><dt class="text-neutral-500">Metode Bayar</dt><dd>{{ ucwords(str_replace('_', ' ', $order->payment->payment_method)) }}</dd></div>
-            <div class="flex justify-between font-medium"><dt>Total</dt><dd>Rp {{ number_format($order->total, 0, ',', '.') }}</dd></div>
+            <div class="flex justify-between"><dt class="text-neutral-500">Status Pesanan</dt><dd><span class="inline-flex px-2 py-0.5 rounded text-[10px] uppercase tracking-[0.1em] @if($order->status==='pending')bg-yellow-100 text-yellow-800@elseif($order->status==='paid')bg-green-100 text-green-800@else bg-neutral-100 text-neutral-800@endif">{{ ucfirst($order->status) }}</span></dd></div>
+            <div class="flex justify-between"><dt class="text-neutral-500">Status Bayar</dt><dd><span class="inline-flex px-2 py-0.5 rounded text-[10px] uppercase tracking-[0.1em] @if($order->payment && $order->payment->payment_status==='paid')bg-green-100 text-green-800@elseif($order->payment && $order->payment->payment_status==='pending')bg-yellow-100 text-yellow-800@else bg-neutral-100 text-neutral-800@endif">{{ $order->payment ? ucfirst($order->payment->payment_status) : 'pending' }}</span></dd></div>
         </dl>
     </div>
 
-    @if ($order->payment->payment_status === 'pending')
-        <div class="border border-neutral-200 rounded-lg p-6 mb-8 bg-neutral-50">
-            <h2 class="mb-4 text-sm uppercase tracking-[0.2em]">Instruksi Pembayaran</h2>
-            <ol class="space-y-2 text-sm text-neutral-600">
-                <li class="flex items-start gap-2"><span class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded-full flex items-center justify-center text-[10px]">1</span> Transfer ke rekening: <strong>BRI 1234-5678-9012 a.n. Quantum Cell</strong></li>
-                <li class="flex items-start gap-2"><span class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded-full flex items-center justify-center text-[10px]">2</span> Jumlah: <strong>Rp {{ number_format($order->total, 0, ',', '.') }}</strong></li>
-                <li class="flex items-start gap-2"><span class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded-full flex items-center justify-center text-[10px]">3</span> Berikan kode invoice <strong>{{ $order->invoice_no }}</strong> sebagai berita transfer.</li>
-                <li class="flex items-start gap-2"><span class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded-full flex items-center justify-center text-[10px]">4</span> Upload bukti transfer di halaman ini (fitur belum tersedia) atau kirim via WhatsApp admin.</li>
-            </ol>
-        </div>
+    <!-- Ringkasan Biaya + PPN -->
+    <div class="border border-neutral-200 rounded-lg p-6 mb-8">
+        <h2 class="mb-4 text-sm uppercase tracking-[0.2em]">Ringkasan Pembayaran</h2>
+        <dl class="space-y-2 text-sm">
+            <div class="flex justify-between"><dt class="text-neutral-500">Subtotal Produk</dt><dd>Rp {{ number_format($order->total, 0, ',', '.') }}</dd></div>
+            <div class="flex justify-between"><dt class="text-neutral-500">PPN ({{ $order->tax_rate ?? 11 }}%)</dt><dd>Rp {{ number_format($order->tax_amount ?? ($order->total * 0.11), 0, ',', '.') }}</dd></div>
+            <div class="flex justify-between"><dt class="text-neutral-500">Ongkir</dt><dd class="text-green-700">Gratis</dd></div>
+            <hr class="border-neutral-200">
+            <div class="flex justify-between font-medium text-lg"><dt>Total Harus Dibayar</dt><dd>Rp {{ number_format($order->total_paid ?? ($order->total * 1.11), 0, ',', '.') }}</dd></div>
+        </dl>
+    </div>
+
+    @if ($order->payment && $order->payment->payment_status === 'pending')
+        <a href="{{ route('checkout.payment', $order) }}" class="block w-full border border-neutral-900 bg-neutral-900 text-white py-3 text-center text-[11px] uppercase tracking-[0.2em] hover:bg-neutral-800 mb-4">Bayar Sekarang (Midtrans Snap)</a>
     @endif
 
-    <div class="border border-neutral-200 rounded-lg p-6">
+    <div class="border border-neutral-200 rounded-lg p-6 mb-8">
         <h2 class="mb-4 text-sm uppercase tracking-[0.2em]">Item Pesanan</h2>
         <table class="w-full text-sm">
             <thead>
@@ -61,8 +64,9 @@
         </table>
     </div>
 
-    <div class="mt-8 flex gap-4">
-        <a href="{{ route('pelanggan.transaksi') }}" class="flex-1 border border-neutral-900 bg-neutral-900 text-white py-3 text-center text-[11px] uppercase tracking-[0.2em] hover:bg-neutral-800">Lihat Riwayat Transaksi</a>
+    <div class="flex gap-4">
+        <a href="{{ route('pelanggan.transaksi.show', $order) }}" class="flex-1 border border-neutral-900 text-neutral-900 py-3 text-center text-[11px] uppercase tracking-[0.2em] hover:bg-neutral-100">Detail Transaksi</a>
+        <a href="{{ route('pelanggan.invoice.download', $order) }}" class="flex-1 border border-neutral-900 bg-neutral-900 text-white py-3 text-center text-[11px] uppercase tracking-[0.2em] hover:bg-neutral-800">Download Invoice PDF</a>
         <a href="{{ route('produk') }}" class="flex-1 border border-neutral-900 text-neutral-900 py-3 text-center text-[11px] uppercase tracking-[0.2em] hover:bg-neutral-100">Lanjut Belanja</a>
     </div>
 </div>

@@ -45,25 +45,30 @@
         </div>
     </div>
 
-    <!-- Related Products -->
-    @if($relatedProducts->isNotEmpty())
-        <div class="mt-24 pt-16 border-t border-neutral-200">
-            <h2 class="text-xl uppercase tracking-[0.25em] mb-12">Related Products</h2>
+    <!-- Recommendations -->
+    <div class="mt-24 pt-16 border-t border-neutral-200">
+        <h2 class="text-xl uppercase tracking-[0.25em] mb-12">Rekomendasi Produk</h2>
+        @if(isset($topRules) && $topRules->isNotEmpty())
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                @foreach ($relatedProducts as $rp)
-                    <a href="{{ route('product.show', $rp) }}" class="group flex flex-col">
-                        <div class="relative aspect-square overflow-hidden bg-neutral-100 border border-neutral-200 mb-4">
-                            @if ($rp->image)
-                                <img src="{{ Storage::url($rp->image) }}" alt="{{ $rp->name }}" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105">
-                            @endif
-                        </div>
-                        <span class="text-[10px] uppercase tracking-[0.2em] text-neutral-400 mb-1">{{ $rp->category->name ?? 'Aksesoris' }}</span>
-                        <h3 class="text-sm font-medium uppercase tracking-[0.1em]">{{ $rp->name }}</h3>
-                        <p class="text-sm mt-2">Rp {{ number_format($rp->price, 0, ',', '.') }}</p>
-                    </a>
+                @foreach ($topRules as $rule)
+                    @if($rule->confidence > 0.5)
+                        <a href="{{ route('product.show', $rule->productB) }}" class="group flex flex-col">
+                            <div class="relative aspect-square overflow-hidden bg-neutral-100 border border-neutral-200 mb-4">
+                                @if($rule->productB->image)
+                                    <img src="{{ Storage::url($rule->productB->image) }}" alt="{{ $rule->productB->name }}" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105">
+                                @endif
+                            </div>
+                            <span class="text-[10px] uppercase tracking-[0.2em] text-neutral-400 mb-1">{{ $rule->productB->category->name ?? 'Aksesoris' }}</span>
+                            <h3 class="text-sm font-medium uppercase tracking-[0.1em]">{{ $rule->productB->name }}</h3>
+                            <p class="text-sm mt-2">Rp {{ number_format($rule->productB->price, 0, ',', '.') }}</p>
+                            <p class="text-xs text-neutral-500 uppercase tracking-[0.05em] mt-1">Sering dibeli bersama {{ $rule->productA->name }}</p>
+                        </a>
+                    @endif
                 @endforeach
             </div>
-        </div>
-    @endif
+        @else
+            <p class="text-center text-neutral-500 italic py-12">Belum ada rekomendasi analisis Apriori.</p>
+        @endif
+    </div>
 </div>
 @endsection

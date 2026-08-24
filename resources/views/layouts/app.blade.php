@@ -50,7 +50,7 @@
                     @if(auth()->user()->role === 'admin')
                         <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Dashboard</a>
                         <a href="{{ route('admin.transaksi') }}" class="{{ request()->routeIs('admin.*transaksi') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Transaksi</a>
-                        <a href="{{ route('admin.apriori') }}" class="{{ request()->routeIs('admin.apriori') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Apriori</a>
+                        <a href="{{ route('admin.apriori.index') }}" class="{{ request()->routeIs('admin.apriori.index') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Apriori</a>
                     @else
                         <a href="{{ route('pelanggan.transaksi') }}" class="{{ request()->routeIs('pelanggan.transaksi') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Transaksi Saya</a>
                         <a href="{{ route('cart.index') }}" class="{{ request()->routeIs('cart.index') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Keranjang</a>
