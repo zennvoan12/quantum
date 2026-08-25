@@ -38,6 +38,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transaksi-saya/{order}/invoice', [InvoiceController::class, 'download'])->name('pelanggan.invoice.download');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // Profil Pembeli (edit & update)
+    Route::get('/profil/edit', [AuthController::class, 'editProfile'])->name('profile.edit');
+    Route::post('/profil/update', [AuthController::class, 'updateProfile'])->name('profile.update');
+
     // Keranjang Belanja & Checkout
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');

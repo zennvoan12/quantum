@@ -113,12 +113,24 @@ class AuthController extends Controller
             : back()->withErrors(['email' => [__($status)]]);
     }
 
-    public function logout(Request $request)
+    public function editProfile()
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('showLogin');
+        $user = auth()->user();
+        return view('profile.edit', compact('user'));
     }
-}
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email,' . $user->id],
+            'no_telp' => ['nullable', 'string', 'max:20'],
+            'alamat' => ['nullable', 'string'],
+        ]);
+
+        $user->update($data);
+
+        return redirect()->route('profile.edit')->with('status', 'Profil berhasil diperbarui');
+    }

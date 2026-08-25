@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
+        // Trust ngrok proxy agar route()/asset() pakai domain publik saat di-tunnel,
+        // akses lokal langsung ke quantum.test tidak terpengaruh (tanpa X-Forwarded-*).
+        $middleware->trustProxies(at: '*');
+
         $middleware->validateCsrfTokens(except: [
             '/payment/notification',
         ]);
