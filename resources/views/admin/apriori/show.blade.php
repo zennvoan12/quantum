@@ -56,7 +56,7 @@
 
     <!-- Association Rules -->
     <div>
-        <h2 class="mb-4 text-sm uppercase tracking-[0.2em]">Aturan Asosiasi (Association Rules)</h2>
+        <h2 class="mb-4 text-sm uppercase tracking-[0.2em]">Aturan Asosiasi (Lift &gt; 1)</h2>
         <div class="border border-neutral-200 rounded-lg overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
@@ -75,7 +75,7 @@
                             <td class="py-3 pr-4">{{ $rule->productB->name ?? 'N/A' }}</td>
                             <td class="py-3 pr-4 text-right">{{ number_format($rule->support, 4) }}</td>
                             <td class="py-3 pr-4 text-right">{{ number_format($rule->confidence, 4) }}</td>
-                            <td class="py-3 text-right font-{{ $rule->confidence > 1 ? 'medium text-green-700' : 'normal' }}">
+                            <td class="py-3 text-right font-medium text-green-700">
                                 {{ number_format($rule->lift ?? 0, 4) }}
                             </td>
                         </tr>

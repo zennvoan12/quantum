@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -113,10 +114,29 @@ class AuthController extends Controller
             : back()->withErrors(['email' => [__($status)]]);
     }
 
-    public function editProfile()
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
+    }
+
+    public function editProfile(Request $request)
     {
         $user = auth()->user();
-        return view('profile.edit', compact('user'));
+
+        // Daftar pesanan user (untuk ditampilkan di dashboard profil)
+        $query = Order::where('user_id', $user->id)->with('items.product');
+        if ($request->status == 'pending') {
+            $query->where('status', 'pending');
+        } elseif ($request->status == 'completed') {
+            $query->where('status', 'completed');
+        }
+        $orders = $query->latest()->get();
+
+        return view('profile.edit', compact('user', 'orders'));
     }
 
     public function updateProfile(Request $request)
@@ -128,9 +148,19 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'unique:users,email,' . $user->id],
             'no_telp' => ['nullable', 'string', 'max:20'],
             'alamat' => ['nullable', 'string'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
+
+        if ($request->hasFile('avatar')) {
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $request->avatar->extension();
+            $request->avatar->storeAs('avatars', $filename, 'public');
+            $data['avatar'] = $filename;
+        } else {
+            unset($data['avatar']);
+        }
 
         $user->update($data);
 
         return redirect()->route('profile.edit')->with('status', 'Profil berhasil diperbarui');
     }
+}

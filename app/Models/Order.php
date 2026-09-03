@@ -3,10 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Observers\OrderObserver;
 
 class Order extends Model
 {
     protected $guarded = [];
+
+    protected static function booted(): void
+    {
+        static::observe(OrderObserver::class);
+    }
 
     public function user()
     {

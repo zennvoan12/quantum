@@ -32,7 +32,7 @@
     <a href="{{ route('admin.categories.index') }}" class="border border-neutral-200 p-6 hover:bg-neutral-50 transition-colors group">
         <span class="block text-sm uppercase tracking-[0.15em] group-hover:underline underline-offset-4">Kelola Kategori</span>
     </a>
-    <a href="{{ route('admin.orders.index') }}" class="border border-neutral-200 p-6 hover:bg-neutral-50 transition-colors group">
+    <a href="{{ route('admin.transaksi') }}" class="border border-neutral-200 p-6 hover:bg-neutral-50 transition-colors group">
         <span class="block text-sm uppercase tracking-[0.15em] group-hover:underline underline-offset-4">Pesanan</span>
     </a>
     <a href="{{ route('admin.apriori.index') }}" class="border border-neutral-200 p-6 hover:bg-neutral-50 transition-colors group">
@@ -54,8 +54,10 @@
         </thead>
         <tbody>
             @forelse ($recent as $o)
-                <tr class="border-b border-neutral-100">
-                    <td class="py-3 px-4 font-medium">{{ $o->invoice_no }}</td>
+                <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-3 px-4 font-medium">
+                        <a href="{{ route('admin.orders.show', $o) }}" class="underline underline-offset-4 hover:text-neutral-900">{{ $o->invoice_no }}</a>
+                    </td>
                     <td class="py-3 px-4 text-neutral-500">{{ $o->created_at->format('d/m/y H:i') }}</td>
                     <td class="py-3 px-4 text-right">Rp {{ number_format($o->total, 0, ',', '.') }}</td>
                     <td class="py-3 px-4">{{ ucfirst($o->status) }}</td>
@@ -70,7 +72,7 @@
 <!-- Top Association Rules -->
 <div class="fade-up delay-4">
     <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm uppercase tracking-[0.2em]">Aturan Asosiasi Teratas (Lift)</h2>
+        <h2 class="text-sm uppercase tracking-[0.2em]">Aturan Asosiasi Teratas (Lift &gt; 1)</h2>
         <a href="{{ route('admin.apriori.index') }}" class="text-[11px] uppercase tracking-[0.2em] text-neutral-400 hover:text-neutral-900 underline underline-offset-4">Lihat Semua &rarr;</a>
     </div>
     <div class="border border-neutral-200 rounded-lg overflow-x-auto">

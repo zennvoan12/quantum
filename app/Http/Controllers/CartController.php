@@ -27,6 +27,9 @@ class CartController extends Controller
         $product = Product::findOrFail($request->product_id);
 
         if ($product->stock < $request->quantity) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Stok tidak mencukupi.'], 422);
+            }
             return back()->withErrors(['quantity' => 'Stok tidak mencukupi.']);
         }
 
@@ -37,6 +40,11 @@ class CartController extends Controller
         $cart->quantity += $request->quantity;
         $cart->save();
 
+        $totalItems = Cart::where('user_id', Auth::id())->sum('quantity');
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'count' => $totalItems, 'message' => 'Produk ditambahkan ke keranjang.']);
+        }
         return back()->with('success', 'Produk ditambahkan ke keranjang.');
     }
 
@@ -62,6 +70,12 @@ class CartController extends Controller
         $this->authorizeCart($cart);
         $cart->delete();
         return back()->with('success', 'Produk dihapus dari keranjang.');
+    }
+
+    public function count()
+    {
+        $count = Auth::check() ? (int) Cart::where('user_id', Auth::id())->sum('quantity') : 0;
+        return response()->json(['count' => $count]);
     }
 
     private function authorizeCart(Cart $cart)

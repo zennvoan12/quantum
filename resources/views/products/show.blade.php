@@ -39,7 +39,7 @@
                 @endif
             @else
                 <div class="mt-auto p-4 border border-neutral-100 bg-neutral-50 text-center">
-                    <p class="text-xs text-neutral-500 uppercase tracking-[0.1em]">Silakan <a href="{{ route('showLogin') }}" class="underline">Login</a> untuk membeli.</p>
+                    <p class="text-xs text-neutral-500 uppercase tracking-[0.1em]">Silakan <a href="{{ route('login') }}" class="underline">Login</a> untuk membeli.</p>
                 </div>
             @endauth
         </div>

@@ -36,6 +36,6 @@
         <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Daftar</button>
     </form>
 
-    <p class="text-sm mt-4">Sudah punya akun? <a href="{{ route('showLogin') }}" class="text-blue-600">Login</a></p>
+    <p class="text-sm mt-4">Sudah punya akun? <a href="{{ route('login') }}" class="text-blue-600">Login</a></p>
 </div>
 @endsection

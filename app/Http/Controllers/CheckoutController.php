@@ -56,6 +56,7 @@ class CheckoutController extends Controller
 
         $request->validate([
             'alamat' => 'required|string|max:500',
+            'payment_method' => 'required|string',
         ]);
 
         $subtotal = $carts->sum(fn($c) => $c->product->price * $c->quantity);
@@ -159,6 +160,15 @@ class CheckoutController extends Controller
         };
 
         return response('ok');
+    }
+
+    public function estimate(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'biaya' => '0 (Gratis)',
+            'estimasi' => '2-3 Hari Kerja'
+        ]);
     }
 
     public function success(Order $order)

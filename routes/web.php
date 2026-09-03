@@ -19,7 +19,7 @@ Route::get('/produk/{product:slug}', [ProductDetailController::class, 'show'])->
 
 // Auth routes (Login/Register)
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('showLogin');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('postLogin');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('showRegister');
     Route::post('/register', [AuthController::class, 'register'])->name('postRegister');
@@ -40,15 +40,18 @@ Route::middleware(['auth'])->group(function () {
 
     // Profil Pembeli (edit & update)
     Route::get('/profil/edit', [AuthController::class, 'editProfile'])->name('profile.edit');
-    Route::post('/profil/update', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profil/update', [AuthController::class, 'updateProfile'])->name('profile.update');
 
     // Keranjang Belanja & Checkout
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::put('/cart/{cart}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::post('/wishlist/toggle/{product}', [\App\Http\Controllers\ProfileController::class, 'toggleWishlist'])->name('wishlist.toggle');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/checkout/estimate', [CheckoutController::class, 'estimate'])->name('checkout.estimate');
     Route::get('/checkout/payment/{order}', [CheckoutController::class, 'payment'])->name('checkout.payment');
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 });

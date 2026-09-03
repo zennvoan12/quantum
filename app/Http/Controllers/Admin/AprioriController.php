@@ -22,7 +22,7 @@ class AprioriController extends Controller
     public function show(AprioriLog $log)
     {
         $log->load([
-            'rules' => fn($q) => $q->with('productA', 'productB')->orderByDesc('lift'),
+            'rules' => fn($q) => $q->strong()->with('productA', 'productB')->orderByDesc('lift'),
             'itemsets',
         ]);
 
@@ -43,12 +43,19 @@ class AprioriController extends Controller
 
         // Ambil data transaksi dari order_items
         $transactions = $this->getTransactions();
+        $totalTransactions = count($transactions);
         
         if (empty($transactions)) {
             return back()->withErrors('Tidak ada data transaksi untuk diproses.');
         }
 
-        $totalTransactions = count($transactions);
+        // 0. Minimum Support Adaptif
+        if ($totalTransactions < 10) {
+            $minSupport = 0.05; 
+        } else {
+            $minSupport = (float) $request->min_support;
+        }
+        $minConfidence = (float) $request->min_confidence;
 
         // 1. Generate 1-itemsets
         $itemCounts = [];
@@ -138,6 +145,9 @@ class AprioriController extends Controller
                         if (!$consequentSupport) continue;
 
                         $lift = $confidence / $consequentSupport;
+                        if ($lift <= AssociationRule::MIN_LIFT) {
+                            continue;
+                        }
 
                         $rules[] = [
                             'antecedent' => $antecedent,

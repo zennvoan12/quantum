@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') · Quantum Cell</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { animate } from "https://cdn.jsdelivr.net/npm/motion@11.11.1/+esm";
+        window.animate = animate;
+    </script>
     <style>
         /* ETQ Amsterdam Style Animations */
         html { scroll-behavior: smooth; }
@@ -49,18 +54,57 @@
                 @auth
                     @if(auth()->user()->role === 'admin')
                         <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Dashboard</a>
-                        <a href="{{ route('admin.transaksi') }}" class="{{ request()->routeIs('admin.*transaksi') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Transaksi</a>
-                        <a href="{{ route('admin.apriori.index') }}" class="{{ request()->routeIs('admin.apriori.index') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Apriori</a>
+                        <a href="{{ route('admin.transaksi') }}" class="{{ request()->routeIs('admin.*transaksi') || request()->routeIs('admin.orders.*') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Transaksi</a>
+                        <a href="{{ route('admin.apriori.index') }}" class="{{ request()->routeIs('admin.apriori.*') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Apriori</a>
+                        <div class="relative group">
+                            <button type="button" class="flex items-center gap-2 text-neutral-400 hover:text-neutral-900 transition-colors">
+                                <div class="w-7 h-7 rounded-full bg-neutral-900 flex items-center justify-center text-[10px] uppercase text-white font-bold">
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                </div>
+                                <span class="text-[11px] uppercase tracking-[0.2em] hidden lg:inline">{{ auth()->user()->name }}</span>
+                            </button>
+                            <div class="hidden group-hover:block absolute right-0 top-full pt-1 z-10">
+                                <div class="bg-white border border-neutral-200 rounded shadow-lg min-w-[160px]">
+                                    <div class="px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-neutral-400 border-b border-neutral-100">Admin</div>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full text-left px-4 py-2 text-[11px] uppercase tracking-[0.2em] text-red-600 hover:bg-red-50">Keluar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     @else
-                        <a href="{{ route('pelanggan.transaksi') }}" class="{{ request()->routeIs('pelanggan.transaksi') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Transaksi Saya</a>
-                        <a href="{{ route('cart.index') }}" class="{{ request()->routeIs('cart.index') ? 'text-neutral-900 underline underline-offset-8' : 'text-neutral-400 hover:text-neutral-900' }} transition-colors">Keranjang</a>
+                        <a href="#" id="open-cart-drawer" class="relative text-neutral-400 hover:text-neutral-900 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                            <span id="cart-count-badge" class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-neutral-900 text-white text-[10px] leading-none"></span>
+                        </a>
+                        <a href="#" id="open-wishlist-drawer" class="text-neutral-400 hover:text-red-500 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        </a>
+                        <div class="relative group">
+                            <button class="flex items-center gap-2 text-neutral-400 hover:text-neutral-900 transition-colors">
+                                @if(auth()->user()->avatar)
+                                    <img src="{{ asset('storage/avatars/' . auth()->user()->avatar) }}" alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-neutral-300">
+                                @else
+                                    <div class="w-7 h-7 rounded-full bg-neutral-300 flex items-center justify-center text-[10px] uppercase text-neutral-700 font-bold">
+                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <span class="text-[11px] uppercase tracking-[0.2em] hidden lg:inline">{{ auth()->user()->name }}</span>
+                            </button>
+                            <div class="hidden group-hover:block absolute right-0 top-full pt-1 z-10">
+                                <div class="bg-white border border-neutral-200 rounded shadow-lg min-w-[160px]">
+                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-[11px] uppercase tracking-[0.2em] text-neutral-700 hover:bg-neutral-50">Akun</a>
+                                    <form method="POST" action="{{ route('logout') }}" class="border-t border-neutral-100">
+                                        @csrf
+                                        <button type="submit" class="w-full text-left px-4 py-2 text-[11px] uppercase tracking-[0.2em] text-red-600 hover:bg-red-50">Keluar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     @endif
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="text-neutral-400 hover:text-neutral-900 transition-colors">Keluar</button>
-                    </form>
                 @else
-                    <a href="{{ route('showLogin') }}" class="text-neutral-400 hover:text-neutral-900 transition-colors">Login</a>
+                    <a href="{{ route('login') }}" class="text-neutral-400 hover:text-neutral-900 transition-colors">Login</a>
                     <a href="{{ route('showRegister') }}" class="text-neutral-400 hover:text-neutral-900 transition-colors">Daftar</a>
                 @endauth
             </div>
@@ -76,5 +120,9 @@
         <span>Analisis Asosiasi — Algoritma Apriori</span>
     </div>
 </footer>
+
+<x-drawers/>
+<x-modals/>
+<script src="{{ asset('js/app.js') }}"></script>
 </body>
 </html>

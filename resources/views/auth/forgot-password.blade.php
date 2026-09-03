@@ -24,7 +24,7 @@
         </form>
 
         <div class="mt-6 text-center text-sm text-neutral-500">
-            <a href="{{ route('showLogin') }}" class="underline hover:text-neutral-900">Kembali ke Login</a>
+            <a href="{{ route('login') }}" class="underline hover:text-neutral-900">Kembali ke Login</a>
         </div>
     </div>
 </div>

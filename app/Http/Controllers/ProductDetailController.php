@@ -15,6 +15,7 @@ class ProductDetailController extends Controller
         $latestLog = AprioriLog::latest()->first();
         $topRules = $latestLog
             ? $latestLog->rules()
+                ->strong()
                 ->with('productA', 'productB.category')
                 ->where('product_id_a', $product->id)
                 ->orderByDesc('confidence')

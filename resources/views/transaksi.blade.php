@@ -1,65 +1,41 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
-@section('title', 'Riwayat Transaksi')
+@section('title', 'Pesanan Saya')
 
-@section('content')
-<div class="fade-up">
-    <h1 class="text-xl uppercase tracking-[0.25em] mb-8">Riwayat Transaksi</h1>
+@section('dashboard-content')
+<h1 class="text-xl uppercase tracking-[0.25em] font-light mb-8">Pesanan Saya</h1>
 
-    @if ($transaksis->isEmpty())
-        <div class="border border-neutral-200 rounded-lg p-12 text-center">
-            <p class="text-neutral-500 mb-4">Belum ada riwayat transaksi.</p>
-            <a href="{{ route('produk') }}" class="border border-neutral-900 text-neutral-900 py-3 px-8 text-[11px] uppercase tracking-[0.2em] hover:bg-neutral-100 inline-block">Mulai Belanja</a>
+<!-- Filter Tabs -->
+<div class="flex gap-8 mb-8 border-b border-neutral-200 text-[11px] uppercase tracking-[0.2em] text-neutral-500">
+    <a href="?status=all" class="pb-3 {{ request('status', 'all') == 'all' ? 'text-neutral-900 border-b border-neutral-900 font-bold' : '' }}">Semua</a>
+    <a href="?status=pending" class="pb-3 {{ request('status') == 'pending' ? 'text-neutral-900 border-b border-neutral-900 font-bold' : '' }}">Proses</a>
+    <a href="?status=completed" class="pb-3 {{ request('status') == 'completed' ? 'text-neutral-900 border-b border-neutral-900 font-bold' : '' }}">Selesai</a>
+</div>
+
+<div class="space-y-4">
+    @forelse($transaksis as $t)
+        <div class="border border-neutral-200 rounded-lg p-5">
+            <div class="flex justify-between items-center mb-4 text-[10px] uppercase tracking-[0.1em]">
+                <span class="text-neutral-500">{{ $t->invoice_no }}</span>
+                <span class="px-2 py-0.5 rounded {{ $t->status == 'completed' ? 'bg-green-100 text-green-800' : 'bg-neutral-100' }}">
+                    {{ strtoupper($t->status) }}
+                </span>
+            </div>
+            
+            @foreach($t->items as $item)
+                <div class="flex gap-4 mb-2">
+                    <img src="{{ asset('images/'.$item->product->image) }}" class="w-12 h-12 object-cover rounded">
+                    <div class="text-sm">{{ $item->product->name }} <span class="text-neutral-500 text-xs">x{{ $item->qty }}</span></div>
+                </div>
+            @endforeach
+            
+            <div class="border-t mt-4 pt-3 flex justify-between items-center">
+                <span class="text-sm font-bold">Rp {{ number_format($t->total, 0, ',', '.') }}</span>
+                <a href="{{ route('pelanggan.transaksi.show', $t->id) }}" class="text-[10px] uppercase tracking-[0.1em] border border-neutral-900 px-3 py-1.5 hover:bg-neutral-900 hover:text-white">Detail</a>
+            </div>
         </div>
-    @else
-        <div class="overflow-x-auto border border-neutral-200 rounded-lg">
-            <table class="w-full text-sm">
-                <thead class="bg-neutral-50">
-                    <tr class="border-b border-neutral-200 text-left text-[11px] uppercase tracking-[0.2em] text-neutral-400">
-                        <th class="py-3 px-4">Invoice</th>
-                        <th class="py-3 px-4">Tanggal</th>
-                        <th class="py-3 px-4">Item</th>
-                        <th class="py-3 px-4 text-right">Total</th>
-                        <th class="py-3 px-4 text-center">Status</th>
-                        <th class="py-3 px-4 text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($transaksis as $trx)
-                        <tr class="border-b border-neutral-100 hover:bg-neutral-50">
-                            <td class="py-3 px-4 font-mono text-xs">{{ $trx->invoice_no }}</td>
-                            <td class="py-3 px-4">{{ $trx->created_at->format('d M Y H:i') }}</td>
-                            <td class="py-3 px-4">
-                                @foreach ($trx->items as $item)
-                                    <div class="truncate">{{ $item->product->name }} x{{ $item->qty }}</div>
-                                @endforeach
-                            </td>
-                            <td class="py-3 px-4 text-right font-medium">Rp {{ number_format($trx->total, 0, ',', '.') }}</td>
-                            <td class="py-3 px-4 text-center">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-[0.1em]
-                                    @if($trx->status === 'pending') bg-yellow-100 text-yellow-800
-                                    @elseif($trx->status === 'paid') bg-green-100 text-green-800
-                                    @elseif($trx->status === 'processing') bg-blue-100 text-blue-800
-                                    @elseif($trx->status === 'shipped') bg-purple-100 text-purple-800
-                                    @elseif($trx->status === 'completed') bg-emerald-100 text-emerald-800
-                                    @elseif($trx->status === 'cancelled') bg-red-100 text-red-800
-                                    @else bg-neutral-100 text-neutral-800 @endif">
-                                    {{ ucfirst($trx->status) }}
-                                </span>
-                                @if($trx->payment)
-                                    <br><span class="text-[10px] text-neutral-400 mt-1">{{ ucfirst($trx->payment->payment_status) }}</span>
-                                @endif
-                            </td>
-                            <td class="py-3 px-4 text-center">
-                                <a href="{{ route('pelanggan.transaksi.show', $trx) }}" class="text-[11px] underline hover:text-neutral-900">Detail</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        {{ $transaksis->links() }}
-    @endif
+    @empty
+        <div class="text-neutral-500 text-center py-12">Belum ada pesanan.</div>
+    @endforelse
 </div>
 @endsection

@@ -28,8 +28,15 @@ class OrderController extends Controller
 
         $order->update(['status' => $request->status]);
 
-        if ($request->status === 'paid' || $request->status === 'completed') {
-            $order->payment()->update(['payment_status' => 'paid', 'paid_at' => now()]);
+        if (in_array($request->status, ['paid', 'completed'], true) && $order->payment) {
+            $order->payment->update([
+                'payment_status' => 'paid',
+                'paid_at' => $order->payment->paid_at ?? now(),
+            ]);
+        }
+
+        if ($request->status === 'cancelled' && $order->payment && $order->payment->payment_status !== 'paid') {
+            $order->payment->update(['payment_status' => 'failed']);
         }
 
         return back()->with('success', 'Status pesanan diperbarui.');

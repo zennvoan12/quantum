@@ -21,12 +21,13 @@
             <div>
                 <label class="block text-[11px] uppercase tracking-[0.2em] mb-1">Minimum Support (0.01 - 1)</label>
                 <input type="number" step="0.01" min="0.01" max="1" name="min_support" value="{{ old('min_support', 0.02) }}" class="w-full border border-neutral-200 px-3 py-2 text-sm" required>
+                <p class="text-[10px] text-neutral-400 mt-1">Adaptif: otomatis 0.05 jika transaksi &lt; 10</p>
             </div>
             <div>
-                <label class="block text-[11px] uppercase tracking-[0.2em] mb-1">Minimum Confidence (0.01 - 1)</label>
-                <input type="number" step="0.01" min="0.01" max="1" name="min_confidence" value="{{ old('min_confidence', 0.5) }}" class="w-full border border-neutral-200 px-3 py-2 text-sm" required>
+                            <label class="block text-[11px] uppercase tracking-[0.2em] mb-1">Minimum Confidence (0.01 - 1)</label>
+                            <input type="number" step="0.01" min="0.01" max="1" name="min_confidence" value="{{ old('min_confidence', 0.5) }}" class="w-full border border-neutral-200 px-3 py-2 text-sm" required>
+                            <p class="text-[10px] text-neutral-400 mt-1">Hanya aturan dengan lift > 1 yang disimpan (asosiasi positif).</p>
             </div>
-        </div>
         <button type="submit" class="border border-neutral-900 bg-neutral-900 text-white px-6 py-2 text-[11px] uppercase tracking-[0.2em] hover:bg-neutral-800">Proses Apriori</button>
     </form>
 </div>

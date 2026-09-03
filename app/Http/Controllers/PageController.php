@@ -6,6 +6,7 @@ use App\Models\AprioriLog;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
@@ -24,7 +25,9 @@ class PageController extends Controller
 
         // Get latest Apriori log with top rules by lift
         $latestLog = AprioriLog::latest()->first();
-        $topRules = $latestLog ? $latestLog->rules()->with('productA', 'productB')->orderByDesc('lift')->take(5)->get() : collect();
+        $topRules = $latestLog
+            ? $latestLog->rules()->strong()->with('productA', 'productB')->orderByDesc('lift')->take(5)->get()
+            : collect();
 
         return view('admin.dashboard', compact('totalTransaksi', 'totalProduk', 'totalItem', 'recent', 'topRules'));
     }
@@ -35,12 +38,15 @@ class PageController extends Controller
         return view('produk', compact('products'));
     }
 
-    public function transaksi()
+    public function transaksi(Request $request)
     {
-        $transaksis = Order::with('items.product')
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->paginate(20);
+        $query = Order::with('items.product')->where('user_id', auth()->id());
+        if ($request->status == 'pending') {
+            $query->where('status', 'pending');
+        } elseif ($request->status == 'completed') {
+            $query->where('status', 'completed');
+        }
+        $transaksis = $query->latest()->paginate(20);
 
         return view('transaksi', compact('transaksis'));
     }

@@ -20,7 +20,7 @@
                 <div class="flex justify-between"><dt class="text-neutral-500">Invoice</dt><dd class="font-medium">{{ $order->invoice_no }}</dd></div>
                 <div class="flex justify-between"><dt class="text-neutral-500">Tanggal</dt><dd>{{ $order->created_at->format('d F Y, H:i') }}</dd></div>
                 <div class="flex justify-between"><dt class="text-neutral-500">Pelanggan</dt><dd>{{ $order->user->name ?? 'Tamu' }} ({{ $order->user->email ?? '-' }})</dd></div>
-                <div class="flex justify-between"><dt class="text-neutral-500">Alamat</dt><dd>{{ $order->user->alamat ?? '-' }}</dd></div>
+                <div class="flex justify-between gap-4"><dt class="text-neutral-500 shrink-0">Alamat Kirim</dt><dd class="text-right">{{ $order->alamat ?: ($order->user->alamat ?? '-') }}</dd></div>
                 <div class="flex justify-between"><dt class="text-neutral-500">Total</dt><dd class="font-medium">Rp {{ number_format($order->total, 0, ',', '.') }}</dd></div>
                 <div class="flex justify-between"><dt class="text-neutral-500">Status</dt><dd>
                     <span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider {{ 
@@ -36,15 +36,15 @@
         <div class="border border-neutral-200 rounded-lg p-6">
             <h2 class="mb-4 text-sm uppercase tracking-[0.2em]">Pembayaran</h2>
             <dl class="space-y-3 text-sm">
-                <div class="flex justify-between"><dt class="text-neutral-500">Metode</dt><dd>{{ ucwords(str_replace('_', ' ', $order->payment->payment_method ?? '-')) }}</dd></div>
+                <div class="flex justify-between"><dt class="text-neutral-500">Metode</dt><dd>{{ ucwords(str_replace('_', ' ', $order->payment?->payment_method ?? '-')) }}</dd></div>
                 <div class="flex justify-between"><dt class="text-neutral-500">Status</dt><dd>
                     <span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider {{ 
-                        $order->payment->payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' 
+                        ($order->payment?->payment_status ?? 'pending') === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' 
                     }}">
-                        {{ $order->payment->payment_status ?? 'pending' }}
+                        {{ $order->payment?->payment_status ?? 'pending' }}
                     </span>
                 </dd></div>
-                <div class="flex justify-between"><dt class="text-neutral-500">Tgl Bayar</dt><dd>{{ $order->payment->paid_at?->format('d F Y H:i') ?? '-' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-neutral-500">Tgl Bayar</dt><dd>{{ $order->payment?->paid_at?->format('d F Y H:i') ?? '-' }}</dd></div>
             </dl>
         </div>
     </div>
